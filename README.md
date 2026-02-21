@@ -4,6 +4,8 @@ A fun web app for kids — type any word and get a matching AI-generated picture
 
 Built for a 6-year-old: colorful animated UI, quick-pick word chips, and large vivid images.
 
+**Slack integration is now ready!** You can generate images directly from Slack.
+
 ## How it works
 
 1. Your child types a word (or taps a chip like 🦄 unicorn)
