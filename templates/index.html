@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Magic Picture Maker ✨</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #ffecd2, #fcb69f, #a1c4fd, #c2e9fb);
+      background-size: 400% 400%;
+      animation: bgShift 10s ease infinite;
+      font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    @keyframes bgShift {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.88);
+      border-radius: 32px;
+      padding: 40px 36px;
+      max-width: 540px;
+      width: 100%;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      color: #ff6b9d;
+      text-shadow: 2px 2px 0 #ffe0ef;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      font-size: 1.05rem;
+      color: #888;
+      margin-bottom: 28px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      font-size: 1.3rem;
+      padding: 14px 18px;
+      border: 3px solid #ffd6e7;
+      border-radius: 18px;
+      outline: none;
+      font-family: inherit;
+      color: #444;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus {
+      border-color: #ff6b9d;
+    }
+
+    button#go-btn {
+      font-size: 1.3rem;
+      padding: 14px 22px;
+      border: none;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #ff6b9d, #f7b733);
+      color: white;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: bold;
+      box-shadow: 0 4px 12px rgba(255,107,157,0.35);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    button#go-btn:hover:not(:disabled) {
+      transform: scale(1.06);
+      box-shadow: 0 6px 16px rgba(255,107,157,0.45);
+    }
+
+    button#go-btn:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
+    /* Spinner */
+    .spinner {
+      display: none;
+      margin: 20px auto;
+      width: 56px;
+      height: 56px;
+      border: 7px solid #ffd6e7;
+      border-top-color: #ff6b9d;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-msg {
+      display: none;
+      font-size: 1.1rem;
+      color: #ff6b9d;
+      margin-bottom: 10px;
+      animation: pulse 1s ease-in-out infinite alternate;
+    }
+
+    @keyframes pulse { from { opacity: 0.6; } to { opacity: 1; } }
+
+    /* Result area */
+    .result {
+      display: none;
+    }
+
+    .prompt-label {
+      font-size: 0.9rem;
+      color: #aaa;
+      margin-bottom: 6px;
+    }
+
+    .prompt-text {
+      font-size: 1rem;
+      color: #666;
+      font-style: italic;
+      margin-bottom: 16px;
+      background: #fff5fb;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 2px dashed #ffd6e7;
+    }
+
+    .image-wrap {
+      position: relative;
+      display: inline-block;
+      width: 100%;
+    }
+
+    #result-img {
+      width: 100%;
+      border-radius: 22px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.14);
+      display: block;
+    }
+
+    .img-loading {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 22px;
+      background: #fff5fb;
+      font-size: 1rem;
+      color: #ff6b9d;
+      gap: 12px;
+    }
+
+    .error-msg {
+      display: none;
+      color: #e74c3c;
+      background: #fdecea;
+      border-radius: 14px;
+      padding: 14px;
+      font-size: 1rem;
+      margin-top: 8px;
+    }
+
+    /* Suggestions */
+    .ideas {
+      margin-top: 24px;
+    }
+
+    .ideas p {
+      font-size: 0.9rem;
+      color: #aaa;
+      margin-bottom: 10px;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .chip {
+      background: #fff5fb;
+      border: 2px solid #ffd6e7;
+      border-radius: 999px;
+      padding: 6px 16px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      color: #ff6b9d;
+      font-family: inherit;
+      transition: background 0.15s, transform 0.12s;
+    }
+
+    .chip:hover {
+      background: #ffd6e7;
+      transform: scale(1.07);
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>✨ Magic Picture Maker ✨</h1>
+    <p class="subtitle">Type any word and watch the magic happen!</p>
+
+    <div class="input-row">
+      <input id="word-input" type="text" placeholder="Try: dragon 🐉"
+             maxlength="50" autocomplete="off" />
+      <button id="go-btn" onclick="generate()">Draw it! 🎨</button>
+    </div>
+
+    <div class="spinner" id="spinner"></div>
+    <p class="loading-msg" id="loading-msg">🪄 Making your picture…</p>
+
+    <div class="result" id="result">
+      <p class="prompt-label">Your magic spell:</p>
+      <p class="prompt-text" id="prompt-text"></p>
+      <div class="image-wrap">
+        <div class="img-loading" id="img-loading">
+          <div class="spinner" id="img-spinner" style="display:block;"></div>
+          <span>Painting…</span>
+        </div>
+        <img id="result-img" src="" alt="Generated image" style="opacity:0;" />
+      </div>
+    </div>
+
+    <div class="error-msg" id="error-msg"></div>
+
+    <div class="ideas">
+      <p>Need ideas? Try one of these:</p>
+      <div class="chips">
+        <button class="chip" onclick="setWord('unicorn')">🦄 unicorn</button>
+        <button class="chip" onclick="setWord('dinosaur')">🦕 dinosaur</button>
+        <button class="chip" onclick="setWord('rocket')">🚀 rocket</button>
+        <button class="chip" onclick="setWord('mermaid')">🧜 mermaid</button>
+        <button class="chip" onclick="setWord('castle')">🏰 castle</button>
+        <button class="chip" onclick="setWord('rainbow')">🌈 rainbow</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const input    = document.getElementById('word-input');
+    const btn      = document.getElementById('go-btn');
+    const spinner  = document.getElementById('spinner');
+    const loadMsg  = document.getElementById('loading-msg');
+    const result   = document.getElementById('result');
+    const promptEl = document.getElementById('prompt-text');
+    const imgEl    = document.getElementById('result-img');
+    const imgLoad  = document.getElementById('img-loading');
+    const errorEl  = document.getElementById('error-msg');
+
+    // Allow Enter key
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') generate(); });
+
+    function setWord(word) {
+      input.value = word;
+      generate();
+    }
+
+    function setLoading(on) {
+      btn.disabled = on;
+      spinner.style.display  = on ? 'block' : 'none';
+      loadMsg.style.display  = on ? 'block' : 'none';
+    }
+
+    function showError(msg) {
+      errorEl.textContent = msg;
+      errorEl.style.display = 'block';
+    }
+
+    function hideError() {
+      errorEl.style.display = 'none';
+    }
+
+    async function generate() {
+      const word = input.value.trim();
+      if (!word) {
+        showError('Type a word first! 😊');
+        return;
+      }
+
+      hideError();
+      result.style.display = 'none';
+      imgEl.style.opacity = '0';
+      setLoading(true);
+
+      try {
+        const res = await fetch('/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ word }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          showError(data.error || 'Something went wrong. Try again!');
+          return;
+        }
+
+        promptEl.textContent = data.prompt;
+        result.style.display = 'block';
+        imgLoad.style.display = 'flex';
+        imgEl.style.opacity = '0';
+
+        // Load image
+        const img = new Image();
+        img.onload = () => {
+          imgEl.src = img.src;
+          imgEl.style.opacity = '1';
+          imgLoad.style.display = 'none';
+        };
+        img.onerror = () => {
+          imgLoad.style.display = 'none';
+          showError('The picture took too long to load. Try again! 🙁');
+        };
+        img.src = data.image_url;
+
+      } catch {
+        showError('Oops! Something went wrong. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    }
+  </script>
+</body>
+</html>
